@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Extractor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bill Extractor</h1>
+        <select id="billType">
+            <option value="pepco">Pepco</option>
+            <option value="constellation">Constellation</option>
+        </select>
+        <input type="file" id="billInput" accept=".pdf" />
+        <button onclick="extractBill()">Extract Bill</button>
+        <button onclick="exportToExcel()">Export to Excel</button>
+        <div id="output"></div>
+    </div>
+
+    <!-- Include SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        function extractBill() {
+            const billType = document.getElementById("billType").value;
+            const fileInput = document.getElementById("billInput").files[0];
+            const outputDiv = document.getElementById("output");
+
+            if (!fileInput) {
+                outputDiv.innerHTML = "Please upload a bill PDF.";
+                return;
+            }
+
+            // Mock extraction (since we can't process PDFs client-side)
+            let extractedData;
+            if (billType === "pepco") {
+                extractedData = {
+                    "Account Name": "AMERICAN UNIVERSITY",
+                    "Account Number": "5502 2344 976",
+                    "Rate Schedule": "non-res-MGT-LV",
+                    "Next Meter Reading": "July 7, 2025",
+                    "Capacity": "366.80 kW",
+                    "$/Capacity": "$20.97",
+                    "Delivery Tax": "7.7"
+                };
+            } else {
+                extractedData = {
+                    "Account Name": "The American University, Inc.",
+                    "Account Number": "0550177481327001488401",
+                    "Supplier Rate": "0.2318",
+                    "Sales Tax": "0",
+                    "Usage": "48 kWh",
+                    "Transmission Quantity": "0.60 kW",
+                    "Transmission Charge": "0.1401900"
+                };
+            }
+
+            // Display extracted data
+            outputDiv.innerHTML = "<h3>Extracted Data</h3>";
+            for (const [key, value] of Object.entries(extractedData)) {
+                outputDiv.innerHTML += `<p><strong>${key}:</strong> ${value}</p>`;
+            }
+
+            // Store extracted data in localStorage (since we can't use a database)
+            localStorage.setItem("billData", JSON.stringify(extractedData));
+        }
+
+        function exportToExcel() {
+            // Retrieve data from localStorage
+            const billData = JSON.parse(localStorage.getItem("billData")) || {};
+
+            // Prepare data for Excel
+            const data = [billData];
+
+            // Create a worksheet
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Bills");
+
+            // Export to Excel
+            XLSX.writeFile(wb, "bills_export.xlsx");
+        }
+    </script>
+</body>
+</html>
